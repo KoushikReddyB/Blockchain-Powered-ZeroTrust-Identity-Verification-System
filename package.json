@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^1.7.0",
+    "@trufflesuite/uws-js-unofficial": "^20.30.0-unofficial.0",
+    "dotenv": "^16.4.7"
+  }
+}

@@ -8,7 +8,7 @@ const port = 3001;
 app.use(express.json());
 app.use(cors());
 
-const web3 = new Web3('http://127.0.0.1:7545'); // Make sure Ganache is running on this port
+const web3 = new Web3('http://127.0.0.1:7545'); // Ganache RPC URL
 const contractAddress = process.env.CONTRACT_ADDRESS; // Access from .env
 const contractABI = [
     {
@@ -94,21 +94,22 @@ const contractABI = [
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 app.post('/register', async (req, res) => {
-    const { userAddress, fingerprint } = req.body;
+    const { fingerprint } = req.body;
     const accounts = await web3.eth.getAccounts();
     try {
-        await contract.methods.registerUser(fingerprint).send({ from: accounts[0] });
-        res.json({ success: true });
+        await contract.methods.registerUser(fingerprint).send({ from: accounts[1] }); //register using account 1.
+        res.json({ success: true, userAddress: accounts[1] });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 app.post('/verify', async (req, res) => {
-    const { userAddress, fingerprint } = req.body;
+    const { fingerprint } = req.body;
+    const accounts = await web3.eth.getAccounts();
     try {
-        const isValid = await contract.methods.verifyFingerprint(userAddress, fingerprint).call();
-        res.json({ isValid });
+        const isValid = await contract.methods.verifyFingerprint(accounts[1], fingerprint).call(); //verify using account 1.
+        res.json({ isValid, userAddress: accounts[1] });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

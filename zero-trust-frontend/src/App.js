@@ -1,49 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import * as FingerprintJS from '@fingerprintjs/fingerprintjs';
+import sha256 from 'js-sha256';
 
 function App() {
-    const [fingerprint, setFingerprint] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [fingerprintHash, setFingerprintHash] = useState('');
     const [message, setMessage] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userAddress, setUserAddress] = useState(null);
+    const [showRegisterForm, setShowRegisterForm] = useState(false);
+    const [showLoginForm, setShowLoginForm] = useState(false);
 
     useEffect(() => {
         const getFingerprint = async () => {
             const fpPromise = FingerprintJS.load();
             const fp = await fpPromise;
             const result = await fp.get();
-            setFingerprint(result.visitorId);
+            const browser = navigator.userAgent;
+            const fullFingerprint = result.visitorId + browser;
+            const hashedFingerprint = sha256(fullFingerprint);
+            setFingerprintHash(hashedFingerprint);
         };
         getFingerprint();
     }, []);
 
     const handleLogin = async () => {
         try {
-            const response = await axios.post('http://localhost:3001/verify', { fingerprint });
-            if (response.data.isValid) {
+            const response = await axios.post('http://localhost:3001/login', { email, password, fingerprintHash });
+            if (response.data.success) {
                 setMessage('Login successful!');
                 setIsLoggedIn(true);
                 setUserAddress(response.data.userAddress);
             } else {
-                setMessage('Login failed.');
+                setMessage(response.data.message);
             }
         } catch (error) {
-            setMessage('Error: ' + error.message);
+            setMessage('Invalid details');
         }
     };
 
     const handleRegister = async () => {
         try {
-            const response = await axios.post('http://localhost:3001/register', { fingerprint });
+            const response = await axios.post('http://localhost:3001/register', { email, password, fingerprintHash });
             if (response.data.success) {
                 setMessage('Registration successful! Please login.');
-                setUserAddress(response.data.userAddress);
+                setShowRegisterForm(false);
             } else {
                 setMessage('Registration failed.');
             }
         } catch (error) {
-            setMessage('Error: ' + error.message);
+            setMessage('Registration failed.');
         }
     };
 
@@ -58,8 +66,50 @@ function App() {
             <h1>Zero Trust Identity Verification</h1>
             {!isLoggedIn ? (
                 <div>
-                    <button onClick={handleLogin}>Login</button>
-                    <button onClick={handleRegister}>Register</button>
+                    {!showRegisterForm && !showLoginForm && (
+                        <div>
+                            <button onClick={() => setShowLoginForm(true)}>Login</button>
+                            <button onClick={() => setShowRegisterForm(true)}>Register</button>
+                        </div>
+                    )}
+
+                    {showLoginForm && (
+                        <div>
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <button onClick={handleLogin}>Login</button>
+                            <button onClick={() => setShowLoginForm(false)}>Cancel</button>
+                        </div>
+                    )}
+
+                    {showRegisterForm && (
+                        <div>
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <button onClick={handleRegister}>Register</button>
+                            <button onClick={() => setShowRegisterForm(false)}>Cancel</button>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div>

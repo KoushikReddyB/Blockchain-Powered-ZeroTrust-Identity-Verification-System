@@ -1,16 +1,50 @@
-require('dotenv').config();
-const express = require('express');
-const { Web3 } = require('web3');
-const cors = require('cors');
-const app = express();
-const port = 3001;
+const express = require("express");
+const{ Web3 } = require("web3");
+const cors = require("cors");
 
+// Create Express app
+const app = express();
 app.use(express.json());
 app.use(cors());
 
-const web3 = new Web3('http://127.0.0.1:7545'); // Ganache RPC URL
-const contractAddress = process.env.CONTRACT_ADDRESS; // Access from .env
+// Connect to Ganache
+const web3 = new Web3("http://127.0.0.1:8545");
+
+// Hardcoded contract details
+const CONTRACT_ADDRESS = "0x04448ffE4EdB9A515C214D0F502361F4d8a9b3AC";
+
 const contractABI = [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "passwordHash",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "fingerprintHash",
+          "type": "string"
+        }
+      ],
+      "name": "UserRegistered",
+      "type": "event"
+    },
     {
       "inputs": [
         {
@@ -19,22 +53,43 @@ const contractABI = [
           "type": "address"
         }
       ],
-      "name": "userFingerprints",
+      "name": "users",
       "outputs": [
         {
           "internalType": "string",
-          "name": "",
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "passwordHash",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "fingerprintHash",
           "type": "string"
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
         {
           "internalType": "string",
-          "name": "fingerprint",
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "passwordHash",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "fingerprintHash",
           "type": "string"
         }
       ],
@@ -46,17 +101,22 @@ const contractABI = [
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "userAddress",
-          "type": "address"
+          "internalType": "string",
+          "name": "email",
+          "type": "string"
         },
         {
           "internalType": "string",
-          "name": "fingerprint",
+          "name": "passwordHash",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "fingerprintHash",
           "type": "string"
         }
       ],
-      "name": "verifyFingerprint",
+      "name": "verifyLogin",
       "outputs": [
         {
           "internalType": "bool",
@@ -65,7 +125,8 @@ const contractABI = [
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -75,7 +136,7 @@ const contractABI = [
           "type": "address"
         }
       ],
-      "name": "getFingerprint",
+      "name": "getFingerprintHash",
       "outputs": [
         {
           "internalType": "string",
@@ -84,56 +145,95 @@ const contractABI = [
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
-  ]; 
+  ];
 
-const contract = new web3.eth.Contract(contractABI, contractAddress);
+// Load contract
+const contract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS);
 
-app.post('/register', async (req, res) => {
-    const { fingerprint } = req.body;
-    const accounts = await web3.eth.getAccounts();
+// Use a predefined Ganache account
+const ACCOUNT_ADDRESS = "0x349FD6d94AdB3bc580DC83514841bd8039BF955A";
+const PRIVATE_KEY = "0x7163db29b5476414eeeb548a7f2a1185fce8236e9aab6f6c4880b5a52c9ff861";
+
+// Function to send transactions
+async function sendTransaction(txObject) {
     try {
-        const receipt = await contract.methods.registerUser(fingerprint).send({ from: accounts[1] });
-        const block = await web3.eth.getBlock(receipt.blockNumber);
-        console.log('Transaction Receipt:', receipt);
-        console.log('Block:', block);
-        res.json({ success: true, userAddress: accounts[1] });
+        const gas = await txObject.estimateGas({ from: ACCOUNT_ADDRESS });
+        const gasPrice = await web3.eth.getGasPrice();
+        const txData = txObject.encodeABI();
+
+        const tx = {
+            from: ACCOUNT_ADDRESS,
+            to: CONTRACT_ADDRESS,
+            gas,
+            gasPrice,
+            data: txData,
+        };
+
+        const signedTx = await web3.eth.accounts.signTransaction(tx, PRIVATE_KEY);
+        const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+        return receipt;
     } catch (error) {
-        console.error('Registration failed:', error);
-        res.status(500).json({ error: error.message });
+        console.error("Transaction failed:", error);
+        throw error;
+    }
+}
+
+// ✅ Register User
+// ✅ Register User (Fixed)
+app.post("/register", async (req, res) => {
+    const { email, passwordHash, fingerprintHash } = req.body;
+
+    console.log("Registering user...", { email, passwordHash, fingerprintHash });
+
+    try {
+        const txObject = contract.methods.registerUser(email, passwordHash, fingerprintHash);
+        const receipt = await sendTransaction(txObject);
+
+        // ✅ Convert all BigInt values to strings before sending JSON response
+        const cleanReceipt = JSON.parse(
+            JSON.stringify(receipt, (key, value) => (typeof value === "bigint" ? value.toString() : value))
+        );
+
+        console.log("User registered successfully:", cleanReceipt);
+        res.json({ success: true, receipt: cleanReceipt });
+    } catch (error) {
+        console.error("Registration failed:", error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.post('/verify', async (req, res) => {
-    const { fingerprint } = req.body;
-    const accounts = await web3.eth.getAccounts();
+
+// ✅ Verify Login
+app.post("/login", async (req, res) => {
+    const { email, passwordHash, fingerprintHash } = req.body;
+
     try {
-        const isValid = await contract.methods.verifyFingerprint(accounts[1], fingerprint).call();
-        if (isValid) {
-            const storedFingerprint = await contract.methods.getFingerprint(accounts[1]).call();
-            console.log('Stored Fingerprint:', storedFingerprint);
-            res.json({ isValid: true, userAddress: accounts[1] });
-        } else {
-            res.json({ isValid: false, userAddress: accounts[1] });
-        }
+        const result = await contract.methods.verifyLogin(email, passwordHash, fingerprintHash).call();
+        res.json({ success: result });
     } catch (error) {
-        console.error('Verification failed:', error);
-        res.status(500).json({ error: error.message });
+        console.error("Login verification failed:", error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/fingerprint/:address', async (req, res) => {
-    const { address } = req.params;
+// ✅ Get Fingerprint Hash
+app.get("/fingerprint/:address", async (req, res) => {
+    const userAddress = req.params.address;
+
     try {
-        const fingerprint = await contract.methods.getFingerprint(address).call();
-        res.json({ fingerprint });
+        const fingerprintHash = await contract.methods.getFingerprintHash(userAddress).call();
+        res.json({ success: true, fingerprintHash });
     } catch (error) {
-        console.error('Get Fingerprint failed:', error);
-        res.status(500).json({ error: error.message });
+        console.error("Failed to fetch fingerprint hash:", error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
+// Start server
+const PORT = 3001;
+app.listen(PORT, () => {
+    console.log(`✅ Server running at http://localhost:${PORT}`);
 });

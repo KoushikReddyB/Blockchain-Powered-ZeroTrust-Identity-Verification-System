@@ -1,17 +1,29 @@
 pragma solidity ^0.8.0;
 
 contract IdentityVerification {
-    mapping(address => string) public userFingerprints;
-
-    function registerUser(string memory fingerprint) public {
-        userFingerprints[msg.sender] = fingerprint;
+    struct User {
+        string email;
+        string passwordHash;
+        string fingerprintHash; // Renamed to fingerprintHash
     }
 
-    function verifyFingerprint(address userAddress, string memory fingerprint) public view returns (bool) {
-        return keccak256(bytes(userFingerprints[userAddress])) == keccak256(bytes(fingerprint));
+    mapping(address => User) public users;
+
+    event UserRegistered(address user, string email, string passwordHash, string fingerprintHash);
+
+    function registerUser(string memory email, string memory passwordHash, string memory fingerprintHash) public {
+    require(bytes(users[msg.sender].email).length == 0, "User already registered!"); // Prevent overwriting
+    users[msg.sender] = User(email, passwordHash, fingerprintHash);
+    emit UserRegistered(msg.sender, email, passwordHash, fingerprintHash);
+}
+
+
+    function verifyLogin(string memory email, string memory passwordHash, string memory fingerprintHash) public view returns (bool) {
+        User storage user = users[msg.sender];
+        return keccak256(bytes(user.email)) == keccak256(bytes(email)) && keccak256(bytes(user.passwordHash)) == keccak256(bytes(passwordHash)) && keccak256(bytes(user.fingerprintHash)) == keccak256(bytes(fingerprintHash));
     }
 
-    function getFingerprint(address userAddress) public view returns (string memory) {
-        return userFingerprints[userAddress];
+    function getFingerprintHash(address userAddress) public view returns (string memory) {
+        return users[userAddress].fingerprintHash;
     }
 }

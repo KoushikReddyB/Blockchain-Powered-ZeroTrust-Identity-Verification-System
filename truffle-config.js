@@ -11,15 +11,16 @@ module.exports = {
         providerOrUrl: `https://sepolia.infura.io/v3/f1f75995e5704955aceead5f9dc7dbea` // Your Infura Project ID
       }),
       network_id: 11155111, // Sepolia network ID
-      gas: 55000000, // Gas limit
+      gas: 550000000, // Gas limit
       confirmations: 3, // Number of confirmations to wait between deployments.
       timeoutBlocks: 2000, // Number of blocks before a deployment times out.
       skipDryRun: true // Skip dry run before migrations? (default: false for public nets )
     },
     development: {
       host: "127.0.0.1",
-      port: 7545, // Ganache's default port
-      network_id: "5777" // Match any network ID
+      port: 8545,
+      network_id: "*", // Match any network id
+      gas: 6721975 // Adjust the gas limit here
     },
   },
   compilers: {

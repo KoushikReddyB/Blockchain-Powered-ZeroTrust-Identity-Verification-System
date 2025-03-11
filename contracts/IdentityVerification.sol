@@ -11,7 +11,7 @@ contract IdentityVerification {
         return keccak256(bytes(userFingerprints[userAddress])) == keccak256(bytes(fingerprint));
     }
 
-    function getFingerprint(address userAddress) public view returns (string memory){
+    function getFingerprint(address userAddress) public view returns (string memory) {
         return userFingerprints[userAddress];
     }
 }

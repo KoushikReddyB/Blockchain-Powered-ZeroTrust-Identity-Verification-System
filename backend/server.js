@@ -8,10 +8,10 @@ app.use(express.json());
 app.use(cors());
 
 // Connect to Ganache
-const web3 = new Web3("http://127.0.0.1:8545");
+const web3 = new Web3("http://127.0.0.1:7545");
 
 // Hardcoded contract details
-const CONTRACT_ADDRESS = "0x04448ffE4EdB9A515C214D0F502361F4d8a9b3AC";
+const CONTRACT_ADDRESS = "0xDb5a1089fb28c5E649DAcB303613B57fCCa1B31f";
 
 const contractABI = [
     {
@@ -154,8 +154,8 @@ const contractABI = [
 const contract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS);
 
 // Use a predefined Ganache account
-const ACCOUNT_ADDRESS = "0x349FD6d94AdB3bc580DC83514841bd8039BF955A";
-const PRIVATE_KEY = "0x7163db29b5476414eeeb548a7f2a1185fce8236e9aab6f6c4880b5a52c9ff861";
+const ACCOUNT_ADDRESS = "0x122c5Bb8B0AeEaB311f7fe3BcBC0121A5086F6a1";
+const PRIVATE_KEY = "0xa0a1506ce5a62ca3cbe81b05bace18c6f1c25717527fd5e07718fad78f6e1844";
 
 // Function to send transactions
 async function sendTransaction(txObject) {

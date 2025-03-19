@@ -1,239 +1,373 @@
 const express = require("express");
-const{ Web3 } = require("web3");
+const { Web3 } = require("web3");
 const cors = require("cors");
+const chalk = require("chalk");
+require("dotenv").config(); // Use environment variables for security
 
-// Create Express app
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Connect to Ganache
-const web3 = new Web3("http://127.0.0.1:7545");
+// 📡 Connect to local Ethereum blockchain (Ganache or Hardhat)
+const web3 = new Web3("http://127.0.0.1:8545");
 
-// Hardcoded contract details
-const CONTRACT_ADDRESS = "0xDb5a1089fb28c5E649DAcB303613B57fCCa1B31f";
+// ⚡ Load environment variables (store these securely!)
+const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
+const ACCOUNT_ADDRESS = "0xc392bceC161827C804A98b339Aac89eBB75bCa30";
+const PRIVATE_KEY = "0x696d09e266f5325e348884fe5a76a942002350636cc852ff8f0aec4e4f832fa7"; // Account for transactions
 
+// ✅ Smart Contract ABI (Replace this with your actual ABI)
 const contractABI = [
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "email",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "passwordHash",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "fingerprintHash",
-          "type": "string"
-        }
-      ],
-      "name": "UserRegistered",
-      "type": "event"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "users",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "email",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "passwordHash",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "fingerprintHash",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "email",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "passwordHash",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "fingerprintHash",
-          "type": "string"
-        }
-      ],
-      "name": "registerUser",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "email",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "passwordHash",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "fingerprintHash",
-          "type": "string"
-        }
-      ],
-      "name": "verifyLogin",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "userAddress",
-          "type": "address"
-        }
-      ],
-      "name": "getFingerprintHash",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    }
-  ];
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "email",
+        "type": "string"
+      }
+    ],
+    "name": "FingerprintUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "name": "LoginAttempt",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "email",
+        "type": "string"
+      }
+    ],
+    "name": "UserRegistered",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "email",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "password",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "fingerprint",
+        "type": "string"
+      }
+    ],
+    "name": "registerUser",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "email",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "password",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "fingerprint",
+        "type": "string"
+      }
+    ],
+    "name": "verifyLogin",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "email",
+        "type": "string"
+      }
+    ],
+    "name": "getUserByEmail",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "userAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getUser",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "email",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "password",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "newFingerprint",
+        "type": "string"
+      }
+    ],
+    "name": "updateFingerprint",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];
 
-// Load contract
 const contract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS);
 
-// Use a predefined Ganache account
-const ACCOUNT_ADDRESS = "0x122c5Bb8B0AeEaB311f7fe3BcBC0121A5086F6a1";
-const PRIVATE_KEY = "0xa0a1506ce5a62ca3cbe81b05bace18c6f1c25717527fd5e07718fad78f6e1844";
-
-// Function to send transactions
-async function sendTransaction(txObject) {
+/**
+ * 📌 Function to send a signed transaction
+ */
+async function sendTransaction(txObject, userAddress = ACCOUNT_ADDRESS) {
     try {
-        const gas = await txObject.estimateGas({ from: ACCOUNT_ADDRESS });
+        const gas = await txObject.estimateGas({ from: userAddress });
         const gasPrice = await web3.eth.getGasPrice();
         const txData = txObject.encodeABI();
+        const nonce = await web3.eth.getTransactionCount(userAddress);
 
         const tx = {
-            from: ACCOUNT_ADDRESS,
+            from: userAddress,
             to: CONTRACT_ADDRESS,
             gas,
             gasPrice,
+            nonce,
             data: txData,
         };
 
         const signedTx = await web3.eth.accounts.signTransaction(tx, PRIVATE_KEY);
         const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+
+        console.log(chalk.greenBright("✅ Transaction successful! 🚀"));
         return receipt;
     } catch (error) {
-        console.error("Transaction failed:", error);
+        console.log(chalk.redBright("❌ Transaction failed... 😵"));
+        console.error(error);
         throw error;
     }
 }
 
-// ✅ Register User
-// ✅ Register User (Fixed)
+/**
+ * 📌 Register a new user
+ */
 app.post("/register", async (req, res) => {
-    const { email, passwordHash, fingerprintHash } = req.body;
+  const { email, passwordHash, fingerprintHash } = req.body;
+  console.log(chalk.blueBright(`📝 Registering user: ${email}`));
 
-    console.log("Registering user...", { email, passwordHash, fingerprintHash });
+  try {
+      // 🔍 Fetch user details using `getUserByEmail` (like in Truffle console)
+      const emailHash = web3.utils.keccak256(email);
+      let userData;
+      try {
+          userData = await contract.methods.getUserByEmail(email).call();
+      } catch (error) {
+          console.log("⚠️ User not found, proceeding with registration...");
+      }
 
-    try {
-        const txObject = contract.methods.registerUser(email, passwordHash, fingerprintHash);
-        const receipt = await sendTransaction(txObject);
+      if (userData && userData[0] !== "") {
+          return res.status(400).json({ success: false, error: "User already registered!" });
+      }
 
-        // ✅ Convert all BigInt values to strings before sending JSON response
-        const cleanReceipt = JSON.parse(
-            JSON.stringify(receipt, (key, value) => (typeof value === "bigint" ? value.toString() : value))
-        );
+      // 🔄 Register user
+      const txObject = contract.methods.registerUser(email, passwordHash, fingerprintHash);
+      const receipt = await sendTransaction(txObject);
 
-        console.log("User registered successfully:", cleanReceipt);
-        res.json({ success: true, receipt: cleanReceipt });
-    } catch (error) {
-        console.error("Registration failed:", error);
-        res.status(500).json({ success: false, error: error.message });
-    }
+      res.json({
+          success: true,
+          receipt: JSON.parse(JSON.stringify(receipt, (key, value) =>
+              typeof value === "bigint" ? value.toString() : value
+          ))
+      });
+  } catch (error) {
+      console.log(chalk.redBright("❌ Registration error:"), error);
+      res.status(500).json({ success: false, error: error.message });
+  }
 });
 
-
-// ✅ Verify Login
+/**
+ * 📌 Login Verification
+ */
 app.post("/login", async (req, res) => {
-    const { email, passwordHash, fingerprintHash } = req.body;
+  const { email, passwordHash, fingerprintHash } = req.body;
+  console.log(chalk.yellowBright(`🔍 Login attempt for: ${email}`));
+
+  try {
+      // Fetch user data from the contract using email
+      const userData = await contract.methods.getUserByEmail(email).call();
+
+      // Check if the user exists
+      if (!userData[0]) {
+          console.log(chalk.redBright(`🚫 User not found: ${email}`));
+          return res.status(404).json({ success: false, error: "User not found" });
+      }
+
+      // Extract stored data
+      const storedPassword = userData[1]; 
+      const storedFingerprint = userData[2];
+      const userAddress = userData[3]; // Assuming the contract returns address as the 4th parameter
+
+      // Verify login using smart contract method
+      const isValidLogin = await contract.methods
+          .verifyLogin(userAddress, email, passwordHash, fingerprintHash)
+          .call();
+
+      if (!isValidLogin) {
+          console.log(chalk.redBright(`🚫 Wrong password OR fingerprint for ${email}`));
+          return res.status(401).json({ success: false, error: "Invalid credentials or device mismatch" });
+      }
+
+      console.log(chalk.greenBright(`✅ Login success for ${email}! 🎉`));
+      res.json({
+          success: true,
+          userAddress,
+          message: "Login successful!"
+      });
+
+  } catch (error) {
+      console.log(chalk.redBright(`❌ Login error for ${email}:`));
+      console.error(error);
+      res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * 📌 Get User Details
+ */
+app.get("/user/:userAddress", async (req, res) => {
+    const { userAddress } = req.params;
+    console.log(chalk.magentaBright(`🔍 Fetching user details for: ${userAddress}`));
 
     try {
-        const result = await contract.methods.verifyLogin(email, passwordHash, fingerprintHash).call();
-        res.json({ success: result });
+        const userData = await contract.methods.getUser(userAddress).call();
+        res.json({
+            success: true,
+            email: userData[0],
+            credentialsHash: userData[1],
+        });
     } catch (error) {
-        console.error("Login verification failed:", error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// ✅ Get Fingerprint Hash
-app.get("/fingerprint/:address", async (req, res) => {
-    const userAddress = req.params.address;
+/**
+ * 📌 Update User Fingerprint
+ */
+app.post("/update-fingerprint", async (req, res) => {
+    const { email, passwordHash, newFingerprintHash, userAddress } = req.body;
+    console.log(chalk.blueBright(`🔄 Updating fingerprint for: ${email} (${userAddress})`));
 
     try {
-        const fingerprintHash = await contract.methods.getFingerprintHash(userAddress).call();
-        res.json({ success: true, fingerprintHash });
+        const txObject = contract.methods.updateFingerprint(newFingerprintHash, email, passwordHash);
+        const receipt = await sendTransaction(txObject, userAddress);
+        res.json({ success: true, receipt });
     } catch (error) {
-        console.error("Failed to fetch fingerprint hash:", error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Start server
-const PORT = 3001;
+/**
+ * 🚀 Start the Express Server
+ */
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`✅ Server running at http://localhost:${PORT}`);
+    console.log(chalk.greenBright(`✅ Server is LIVE! 🚀 Ready at: http://localhost:${PORT}`));
 });

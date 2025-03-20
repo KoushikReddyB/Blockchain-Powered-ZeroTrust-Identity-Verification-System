@@ -3,18 +3,20 @@ require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: process.env.SMTP_PORT || 587, // Use 587 for better reliability
-    secure: false, // `false` for TLS (587), `true` for SSL (465)
+    port: Number(process.env.SMTP_PORT) || 587, // Ensure it's a number
+    secure: false, // ✅ `false` for TLS (port 587), `true` for SSL (port 465)
     auth: {
         user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS, // Use an App Password, NOT your regular Gmail password
+        pass: process.env.SMTP_PASS, // ⚠️ Use an App Password, not your Gmail password
     },
     tls: {
-        rejectUnauthorized: false, // Prevent TLS errors
+        ciphers: "SSLv3", // ✅ Prevents unexpected connection closures
+        rejectUnauthorized: false, // ✅ Fixes TLS-related errors
     },
+    connectionTimeout: 10000, // ✅ Avoids connection timeout errors
 });
 
-// ✅ Debugging: Verify SMTP connection
+// ✅ Verify SMTP Connection
 transporter.verify((error, success) => {
     if (error) {
         console.error("❌ SMTP Connection Failed:", error);
@@ -23,12 +25,12 @@ transporter.verify((error, success) => {
     }
 });
 
-// 📌 Function to generate a 6-digit OTP
+// 📌 Generate a 6-digit OTP
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// 📩 Function to send OTP via email (with retry)
+// 📩 Send OTP Email (With Retry)
 async function sendOTP(email, otp, retries = 1) {
     const mailOptions = {
         from: `"Security Team" <${process.env.SMTP_USER}>`,
@@ -45,7 +47,6 @@ async function sendOTP(email, otp, retries = 1) {
         console.error(`❌ Failed to send OTP to ${email}`);
         console.error("📌 Detailed Error:", error);
 
-        // Retry logic for transient failures
         if (retries > 0) {
             console.log(`🔄 Retrying to send OTP... (${2 - retries} attempt left)`);
             return sendOTP(email, otp, retries - 1);

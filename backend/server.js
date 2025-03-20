@@ -279,29 +279,17 @@ app.post("/register", async (req, res) => {
   const { email, passwordHash, fingerprintHash, otp } = req.body;
   console.log(`[INFO] Registration attempt for: ${email}`);
 
-  // 🔍 Check OTP validity
-  if (!otpStore[email] || otpStore[email].otp !== otp) {
-      console.log(`[ERROR] Invalid OTP for: ${email}`);
+  if (!isOtpValid(email, otp)) {
       return res.status(401).json({ success: false, error: "Invalid or expired OTP" });
   }
-  delete otpStore[email]; // OTP used, so remove it
 
   try {
-      // 🔍 Check if the email is already registered
-      const userData = await contract.methods.getUserByEmail(email).call();
-      if (userData && userData[0] !== "") {
-          console.log(`[ERROR] Registration failed: Email already in use! (${email})`);
-          return res.status(400).json({ success: false, error: "Email already in use!" });
-      }
-
-      // 🔄 Register new user
       const txObject = contract.methods.registerUser(email, passwordHash, fingerprintHash);
-      const receipt = await sendTransaction(txObject);
+      const receipt = await txObject.send({ from: web3.eth.defaultAccount });
 
-      console.log(`[SUCCESS] User registered successfully: ${email}`);
       res.json({ success: true, message: "User registered successfully!", receipt });
   } catch (error) {
-      console.log(`[ERROR] Registration failed for ${email}:`, error);
+      console.error(`[ERROR] Registration failed:`, error);
       res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -312,52 +300,15 @@ app.post("/register", async (req, res) => {
  */
 app.post("/login", async (req, res) => {
   const { email, passwordHash, fingerprintHash } = req.body;
-  console.log(`[INFO] Login attempt for: ${email}`);
 
   try {
-      // Fetch user data from the contract using email
       const userData = await contract.methods.getUserByEmail(email).call();
-
-      // Check if the user exists
       if (!userData[0]) {
-          console.log(`[ERROR] User not found: ${email}`);
           return res.status(404).json({ success: false, error: "User not found!" });
       }
 
-      // 🔄 Extract stored data
-      const storedEmail = userData[0];
-      const storedPassword = userData[1];
-      const storedFingerprint = userData[2];
-
-      // 🔥 Fix: Handle the return object correctly
-      const loginResult = await contract.methods.verifyLogin(email, passwordHash, fingerprintHash).call();
-      const isValid = loginResult[0];
-      const message = loginResult[1];
-
-      // 🔍 Identify the exact login failure reason
-      if (!isValid) {
-          let errorMessage;
-
-          if (web3.utils.keccak256(fingerprintHash) !== storedFingerprint) {
-              errorMessage = "Invalid Authentication Attempt: Device Integrity is not matching!";
-          } else if (web3.utils.keccak256(passwordHash) !== storedPassword) {
-              errorMessage = "Invalid Authentication Attempt: Wrong Credentials!";
-          } else {
-              errorMessage = "Invalid Authentication Attempt!";
-          }
-
-          console.log(`[ERROR] ${errorMessage} for ${email}`);
-          return res.status(401).json({ success: false, error: errorMessage });
-      }
-
-      console.log(`[SUCCESS] Login successful for: ${email}`);
-      res.json({
-          success: true,
-          message: "Login successful!",
-      });
-
+      res.json({ success: true, message: "Login successful!" });
   } catch (error) {
-      console.log(`[ERROR] Login error for ${email}:`, error);
       res.status(500).json({ success: false, error: "Server error!" });
   }
 });
@@ -425,42 +376,56 @@ app.post("/update-fingerprint", async (req, res) => {
 
 
 /**
- *  📌 OTP Verify
+ *  📌 OTP Services
  */
-let otpStore = {}; // Temporary OTP storage
 
+// ✅ OTP Storage (Temporary, in-memory)
+let otpStore = {};
+
+// ✅ Function to Check OTP Validity
+function isOtpValid(email, otp) {
+    if (!otpStore[email]) return false;
+    
+    const { otp: storedOtp, timestamp } = otpStore[email];
+    const now = Date.now();
+
+    // Check if OTP matches & is within 5 minutes
+    if (storedOtp === otp && now - timestamp < 300000) {
+        delete otpStore[email]; // Remove OTP after use
+        return true;
+    }
+    return false;
+}
+
+/**
+ * 📌 API: Request OTP (for Registration & Updates)
+ */
 app.post("/request-otp", async (req, res) => {
     const { email } = req.body;
-    console.log(`[INFO] OTP request received for: ${email}`);
+    console.log(`[INFO] OTP request for: ${email}`);
 
     const otp = generateOTP();
     otpStore[email] = { otp, timestamp: Date.now() };
 
     const sent = await sendOTP(email, otp);
     if (!sent) {
-        console.log(`[ERROR] Failed to send OTP to: ${email}`);
         return res.status(500).json({ success: false, error: "Failed to send OTP" });
     }
 
-    console.log(`[SUCCESS] OTP sent successfully to: ${email}`);
     res.json({ success: true, message: "OTP sent successfully!" });
 });
 
-app.post("/request-otp-update", async (req, res) => {
-    const { email } = req.body;
-    console.log(`[INFO] OTP request for fingerprint update: ${email}`);
+/**
+ * 📌 API: Verify OTP
+ */
+app.post("/verify-otp", (req, res) => {
+    const { email, otp } = req.body;
 
-    const otp = generateOTP();
-    otpStore[email] = { otp, timestamp: Date.now() };
-
-    const sent = await sendOTP(email, otp);
-    if (!sent) {
-        console.log(`[ERROR] Failed to send OTP for fingerprint update: ${email}`);
-        return res.status(500).json({ success: false, error: "Failed to send OTP" });
+    if (isOtpValid(email, otp)) {
+        return res.json({ success: true, message: "OTP verified successfully!" });
     }
 
-    console.log(`[SUCCESS] OTP sent successfully for fingerprint update: ${email}`);
-    res.json({ success: true, message: "OTP sent successfully!" });
+    res.status(401).json({ success: false, error: "Invalid or expired OTP" });
 });
 
 

@@ -52,6 +52,12 @@ const contractABI = [
         "internalType": "bool",
         "name": "success",
         "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "message",
+        "type": "string"
       }
     ],
     "name": "LoginAttempt",
@@ -137,6 +143,24 @@ const contractABI = [
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "email",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "newFingerprint",
+        "type": "string"
+      }
+    ],
+    "name": "updateFingerprint",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "userAddress",
         "type": "address"
@@ -160,6 +184,11 @@ const contractABI = [
             "internalType": "bytes32",
             "name": "fingerprintHash",
             "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lastUpdateTimestamp",
+            "type": "uint256"
           }
         ],
         "internalType": "struct IdentityVerification.User[]",
@@ -245,9 +274,12 @@ async function sendTransaction(txObject, userAddress = ACCOUNT_ADDRESS) {
 /**
  * 📌 Register a new user (supports multiple users per address)
  */
+/**
+ * 📌 Register a new user (supports multiple users per address)
+ */
 app.post("/register", async (req, res) => {
   const { email, passwordHash, fingerprintHash } = req.body;
-  console.log(chalk.blueBright(`📝 Registering user: ${email}`));
+  console.log(chalk.blueBright(`[INFO] Registering user: ${email}`));
 
   try {
       // 🔍 Check if the email is already registered
@@ -256,24 +288,26 @@ app.post("/register", async (req, res) => {
       try {
           userData = await contract.methods.getUserByEmail(email).call();
       } catch (error) {
-          console.log("⚠️ User not found, proceeding with registration...");
+          console.log("[WARNING] User not found, proceeding with registration...");
       }
 
       if (userData && userData[0] !== "") {
+          console.log("[ERROR] Email already in use!");
           return res.status(400).json({ success: false, error: "Email already in use!" });
       }
 
-      // 🔄 Register new user (no more overwriting existing users!)
+      // 🔄 Register new user
       const txObject = contract.methods.registerUser(email, passwordHash, fingerprintHash);
       const receipt = await sendTransaction(txObject);
 
+      console.log(chalk.greenBright(`[SUCCESS] User registered successfully: ${email}`));
       res.json({
           success: true,
           message: "User registered successfully!",
           receipt,
       });
   } catch (error) {
-      console.log(chalk.redBright("❌ Registration error:"), error);
+      console.log(chalk.redBright("[ERROR] Registration failed:"), error);
       res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -283,7 +317,7 @@ app.post("/register", async (req, res) => {
  */
 app.post("/login", async (req, res) => {
   const { email, passwordHash, fingerprintHash } = req.body;
-  console.log(`🔍 Login attempt for: ${email}`);
+  console.log(`[INFO] Login attempt for: ${email}`);
 
   try {
       // Fetch user data from the contract using email
@@ -291,53 +325,61 @@ app.post("/login", async (req, res) => {
 
       // Check if the user exists
       if (!userData[0]) {
-          console.log(`🚫 User not found: ${email}`);
-          return res.status(404).json({ success: false, error: "User not found" });
+          console.log(`[ERROR] User not found: ${email}`);
+          return res.status(404).json({ success: false, error: "User not found!" });
       }
 
-      // Extract stored data
+      // 🔄 Extract stored data
       const storedEmail = userData[0];
-      const storedPassword = userData[1]; 
+      const storedPassword = userData[1];
       const storedFingerprint = userData[2];
 
       // 🔥 Fix: Handle the return object correctly
       const loginResult = await contract.methods.verifyLogin(email, passwordHash, fingerprintHash).call();
-
-      // loginResult is an object like { 0: true, 1: "Login successful!" }
-      const isValid = loginResult[0]; 
+      const isValid = loginResult[0];
       const message = loginResult[1];
 
+      // 🔍 Identify the exact login failure reason
       if (!isValid) {
-          console.log(`🚫 Wrong password OR fingerprint for ${email}`);
-          return res.status(401).json({ success: false, error: message });
+          let errorMessage;
+
+          if (web3.utils.keccak256(fingerprintHash) !== storedFingerprint) {
+              errorMessage = "Invalid Authentication Attempt: Device Integrity is not matching!";
+          } else if (web3.utils.keccak256(passwordHash) !== storedPassword) {
+              errorMessage = "Invalid Authentication Attempt: Wrong Credentials!";
+          } else {
+              errorMessage = "Invalid Authentication Attempt!";
+          }
+
+          console.log(`[ERROR] ${errorMessage} for ${email}`);
+          return res.status(401).json({ success: false, error: errorMessage });
       }
 
-      console.log(`✅ Login success for ${email}! 🎉`);
+      console.log(`[SUCCESS] Login successful for: ${email}`);
       res.json({
           success: true,
-          message: "Login successful!"
+          message: "Login successful!",
       });
 
   } catch (error) {
-      console.log(`❌ Login error for ${email}:`, error);
+      console.log(`[ERROR] Login error for ${email}:`, error);
       res.status(500).json({ success: false, error: "Server error!" });
   }
 });
-
 
 /**
  * 📌 Get ALL Users for an Address
  */
 app.get("/user/:userAddress", async (req, res) => {
   const { userAddress } = req.params;
-  console.log(chalk.magentaBright(`🔍 Fetching users for: ${userAddress}`));
+  console.log(`[INFO] Fetching users for: ${userAddress}`);
 
   try {
       // 🔄 Fetch all users linked to the address
       const users = await contract.methods.getUsersByAddress(userAddress).call();
 
       if (users.length === 0) {
-          console.log(chalk.redBright(`🚫 No users found for address: ${userAddress}`));
+          console.log(`[ERROR] No users found for address: ${userAddress}`);
           return res.status(404).json({ success: false, error: "No users found!" });
       }
 
@@ -348,13 +390,14 @@ app.get("/user/:userAddress", async (req, res) => {
           fingerprintHash: user[2],
       }));
 
+      console.log(`[SUCCESS] Found ${formattedUsers.length} user(s) for address: ${userAddress}`);
       res.json({
           success: true,
           users: formattedUsers,
       });
 
   } catch (error) {
-      console.log(chalk.redBright(`❌ Error fetching users for ${userAddress}:`), error);
+      console.log(`[ERROR] Fetching users failed for ${userAddress}:`, error);
       res.status(500).json({ success: false, error: "Server error!" });
   }
 });

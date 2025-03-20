@@ -107,4 +107,4 @@ async function verifyOTP(email, otp) {
     return { success: true };
 }
 
-module.exports = { generateOTP, sendOTP, verifyOTP };
+module.exports = { generateOTP, sendOTP, verifyOTP, otpStore };

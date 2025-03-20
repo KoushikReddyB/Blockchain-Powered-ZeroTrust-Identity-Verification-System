@@ -72,6 +72,15 @@ contract IdentityVerification {
     }
 
     /**
+    * 📌 Get Blockchain Address by Email
+    */
+    function getAddressByEmail(string memory email) public view returns (address) {
+        bytes32 emailHash = keccak256(abi.encodePacked(email));
+        return emailToAddress[emailHash];
+    }
+
+
+    /**
      * 📌 Update Fingerprint (Requires Cooldown Period)
      */
     function updateFingerprint(string memory email, string memory newFingerprint) public {

@@ -123,6 +123,11 @@ const contractABI = [
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -312,8 +317,12 @@ app.post("/login", async (req, res) => {
       const storedPassword = userData[1]; 
       const storedFingerprint = userData[2];
 
-      // 🔥 Fix: Call verifyLogin using email (not address)
-      const [isValid, message] = await contract.methods.verifyLogin(email, passwordHash, fingerprintHash).call();
+      // 🔥 Fix: Handle the return object correctly
+      const loginResult = await contract.methods.verifyLogin(email, passwordHash, fingerprintHash).call();
+
+      // loginResult is an object like { 0: true, 1: "Login successful!" }
+      const isValid = loginResult[0]; 
+      const message = loginResult[1];
 
       if (!isValid) {
           console.log(`🚫 Wrong password OR fingerprint for ${email}`);

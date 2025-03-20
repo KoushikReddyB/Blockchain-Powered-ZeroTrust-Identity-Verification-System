@@ -137,6 +137,43 @@ const contractABI = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "userAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getUsersByAddress",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "email",
+            "type": "string"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "passwordHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "fingerprintHash",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct IdentityVerification.User[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "email",
         "type": "string"
@@ -163,59 +200,6 @@ const contractABI = [
     "stateMutability": "view",
     "type": "function",
     "constant": true
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "userAddress",
-        "type": "address"
-      }
-    ],
-    "name": "getUser",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function",
-    "constant": true
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "email",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "password",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "newFingerprint",
-        "type": "string"
-      }
-    ],
-    "name": "updateFingerprint",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
   }
 ];
 
@@ -259,14 +243,14 @@ async function sendTransaction(txObject, userAddress = ACCOUNT_ADDRESS) {
 }
 
 /**
- * 📌 Register a new user
+ * 📌 Register a new user (supports multiple users per address)
  */
 app.post("/register", async (req, res) => {
   const { email, passwordHash, fingerprintHash } = req.body;
   console.log(chalk.blueBright(`📝 Registering user: ${email}`));
 
   try {
-      // 🔍 Fetch user details using `getUserByEmail` (like in Truffle console)
+      // 🔍 Check if the email is already registered
       const emailHash = web3.utils.keccak256(email);
       let userData;
       try {
@@ -276,18 +260,17 @@ app.post("/register", async (req, res) => {
       }
 
       if (userData && userData[0] !== "") {
-          return res.status(400).json({ success: false, error: "User already registered!" });
+          return res.status(400).json({ success: false, error: "Email already in use!" });
       }
 
-      // 🔄 Register user
+      // 🔄 Register new user (no more overwriting existing users!)
       const txObject = contract.methods.registerUser(email, passwordHash, fingerprintHash);
       const receipt = await sendTransaction(txObject);
 
       res.json({
           success: true,
-          receipt: JSON.parse(JSON.stringify(receipt, (key, value) =>
-              typeof value === "bigint" ? value.toString() : value
-          ))
+          message: "User registered successfully!",
+          receipt,
       });
   } catch (error) {
       console.log(chalk.redBright("❌ Registration error:"), error);
@@ -296,7 +279,7 @@ app.post("/register", async (req, res) => {
 });
 
 /**
- * 📌 Login Verification
+ * 📌 Login Verification (Supports Multiple Users)
  */
 app.post("/login", async (req, res) => {
   const { email, passwordHash, fingerprintHash } = req.body;
@@ -343,22 +326,37 @@ app.post("/login", async (req, res) => {
 
 
 /**
- * 📌 Get User Details
+ * 📌 Get ALL Users for an Address
  */
 app.get("/user/:userAddress", async (req, res) => {
-    const { userAddress } = req.params;
-    console.log(chalk.magentaBright(`🔍 Fetching user details for: ${userAddress}`));
+  const { userAddress } = req.params;
+  console.log(chalk.magentaBright(`🔍 Fetching users for: ${userAddress}`));
 
-    try {
-        const userData = await contract.methods.getUser(userAddress).call();
-        res.json({
-            success: true,
-            email: userData[0],
-            credentialsHash: userData[1],
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
+  try {
+      // 🔄 Fetch all users linked to the address
+      const users = await contract.methods.getUsersByAddress(userAddress).call();
+
+      if (users.length === 0) {
+          console.log(chalk.redBright(`🚫 No users found for address: ${userAddress}`));
+          return res.status(404).json({ success: false, error: "No users found!" });
+      }
+
+      // Convert BigInt to strings if necessary
+      const formattedUsers = users.map(user => ({
+          email: user[0],
+          credentialsHash: user[1],
+          fingerprintHash: user[2],
+      }));
+
+      res.json({
+          success: true,
+          users: formattedUsers,
+      });
+
+  } catch (error) {
+      console.log(chalk.redBright(`❌ Error fetching users for ${userAddress}:`), error);
+      res.status(500).json({ success: false, error: "Server error!" });
+  }
 });
 
 /**

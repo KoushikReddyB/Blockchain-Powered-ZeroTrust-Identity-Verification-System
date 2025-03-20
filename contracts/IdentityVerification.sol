@@ -8,8 +8,9 @@ contract IdentityVerification {
         bytes32 fingerprintHash;
     }
 
-    mapping(address => User) private users;
-    mapping(bytes32 => address) private emailToAddress; // 🔥 Use `bytes32` instead of `string`
+    // 🔥 Change mapping to store multiple users under the same address
+    mapping(address => User[]) private users;  // Now stores an array of users per address
+    mapping(bytes32 => address) private emailToAddress; // Map email to an Ethereum address
 
     event UserRegistered(address indexed user, string email);
     event LoginAttempt(address indexed user, bool success);
@@ -18,65 +19,58 @@ contract IdentityVerification {
     function registerUser(string memory email, string memory password, string memory fingerprint) public {
         bytes32 emailHash = keccak256(abi.encodePacked(email));
 
-        require(bytes(users[msg.sender].email).length == 0, "User already registered!");
+        // 🔥 Check if email is already in use
         require(emailToAddress[emailHash] == address(0), "Email already in use!");
 
-        users[msg.sender] = User(email, keccak256(abi.encodePacked(password)), keccak256(abi.encodePacked(fingerprint)));
+        // 🔄 Append new user to the user's list
+        users[msg.sender].push(User(email, keccak256(abi.encodePacked(password)), keccak256(abi.encodePacked(fingerprint))));
         emailToAddress[emailHash] = msg.sender;
 
         emit UserRegistered(msg.sender, email);
     }
 
-   function verifyLogin(string memory email, string memory password, string memory fingerprint) 
-    public 
-    view 
-    returns (bool, string memory) 
-{
-    bytes32 emailHash = keccak256(abi.encodePacked(email));
-    address userAddress = emailToAddress[emailHash];
+    function verifyLogin(string memory email, string memory password, string memory fingerprint) 
+        public 
+        view 
+        returns (bool, string memory) 
+    {
+        bytes32 emailHash = keccak256(abi.encodePacked(email));
+        address userAddress = emailToAddress[emailHash];
 
-    if (userAddress == address(0)) {
-        return (false, "User not found!");
+        if (userAddress == address(0)) {
+            return (false, "User not found!");
+        }
+
+        User[] memory userList = users[userAddress];
+
+        for (uint i = 0; i < userList.length; i++) {
+            if (
+                keccak256(abi.encodePacked(password)) == userList[i].passwordHash &&
+                keccak256(abi.encodePacked(fingerprint)) == userList[i].fingerprintHash
+            ) {
+                return (true, "Login successful!");
+            }
+        }
+
+        return (false, "Invalid credentials!");
     }
 
-    User memory user = users[userAddress];
-
-    if (keccak256(abi.encodePacked(password)) != user.passwordHash) {
-        return (false, "Incorrect password!");
+    function getUsersByAddress(address userAddress) public view returns (User[] memory) {
+        require(users[userAddress].length > 0, "No users found for this address!");
+        return users[userAddress];
     }
-
-    if (keccak256(abi.encodePacked(fingerprint)) != user.fingerprintHash) {
-        return (false, "Incorrect fingerprint!");
-    }
-
-    return (true, "Login successful!");
-}
-
 
     function getUserByEmail(string memory email) public view returns (string memory, bytes32, bytes32) {
         address userAddress = emailToAddress[keccak256(abi.encodePacked(email))];
         require(userAddress != address(0), "User not found!");
 
-        User memory user = users[userAddress];
-        return (user.email, user.passwordHash, user.fingerprintHash);
-    }
+        User[] memory userList = users[userAddress];
+        for (uint i = 0; i < userList.length; i++) {
+            if (keccak256(abi.encodePacked(email)) == keccak256(abi.encodePacked(userList[i].email))) {
+                return (userList[i].email, userList[i].passwordHash, userList[i].fingerprintHash);
+            }
+        }
 
-    function getUser(address userAddress) public view returns (string memory, bytes32, bytes32) {
-        require(bytes(users[userAddress].email).length > 0, "User not found!");
-        User memory user = users[userAddress];
-        return (user.email, user.passwordHash, user.fingerprintHash);
-    }
-
-    function updateFingerprint(string memory email, string memory password, string memory newFingerprint) public {
-        address userAddress = emailToAddress[keccak256(abi.encodePacked(email))];
-        require(userAddress == msg.sender, "Unauthorized action!");
-
-        User storage user = users[msg.sender];
-        require(keccak256(abi.encodePacked(password)) == user.passwordHash, "Incorrect password!");
-
-
-        user.fingerprintHash = keccak256(abi.encodePacked(newFingerprint));
-
-        emit FingerprintUpdated(msg.sender, email);
+        revert("User not found!");
     }
 }

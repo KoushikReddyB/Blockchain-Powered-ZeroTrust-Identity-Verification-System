@@ -27,14 +27,29 @@ contract IdentityVerification {
         emit UserRegistered(msg.sender, email);
     }
 
-    function verifyLogin(string memory email, string memory password, string memory fingerprint) public view returns (bool) {
-    address userAddress = emailToAddress[keccak256(abi.encodePacked(email))];
-    require(userAddress != address(0), "User not found!");
+   function verifyLogin(string memory email, string memory password, string memory fingerprint) 
+    public 
+    view 
+    returns (bool, string memory) 
+{
+    bytes32 emailHash = keccak256(abi.encodePacked(email));
+    address userAddress = emailToAddress[emailHash];
+
+    if (userAddress == address(0)) {
+        return (false, "User not found!");
+    }
 
     User memory user = users[userAddress];
 
-    return (keccak256(abi.encodePacked(password)) == user.passwordHash &&
-            keccak256(abi.encodePacked(fingerprint)) == user.fingerprintHash);
+    if (keccak256(abi.encodePacked(password)) != user.passwordHash) {
+        return (false, "Incorrect password!");
+    }
+
+    if (keccak256(abi.encodePacked(fingerprint)) != user.fingerprintHash) {
+        return (false, "Incorrect fingerprint!");
+    }
+
+    return (true, "Login successful!");
 }
 
 

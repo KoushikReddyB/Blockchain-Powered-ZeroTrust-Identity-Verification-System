@@ -3,6 +3,7 @@ const { Web3 } = require("web3");
 const cors = require("cors");
 const chalk = require("chalk");
 require("dotenv").config(); // Use environment variables for security
+const bodyParser = require("body-parser");
 
 const app = express();
 app.use(express.json());
@@ -215,6 +216,12 @@ const contractABI = [
 
 const contract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS);
 
+
+// ✅ Fix BigInt Serialization Issue
+BigInt.prototype.toJSON = function () {
+  return this.toString();
+};
+
 /**
  * 📌 Function to send a signed transaction
  */
@@ -288,7 +295,7 @@ app.post("/register", async (req, res) => {
  */
 app.post("/login", async (req, res) => {
   const { email, passwordHash, fingerprintHash } = req.body;
-  console.log(chalk.yellowBright(`🔍 Login attempt for: ${email}`));
+  console.log(`🔍 Login attempt for: ${email}`);
 
   try {
       // Fetch user data from the contract using email
@@ -296,38 +303,35 @@ app.post("/login", async (req, res) => {
 
       // Check if the user exists
       if (!userData[0]) {
-          console.log(chalk.redBright(`🚫 User not found: ${email}`));
+          console.log(`🚫 User not found: ${email}`);
           return res.status(404).json({ success: false, error: "User not found" });
       }
 
       // Extract stored data
+      const storedEmail = userData[0];
       const storedPassword = userData[1]; 
       const storedFingerprint = userData[2];
-      const userAddress = userData[3]; // Assuming the contract returns address as the 4th parameter
 
-      // Verify login using smart contract method
-      const isValidLogin = await contract.methods
-          .verifyLogin(userAddress, email, passwordHash, fingerprintHash)
-          .call();
+      // 🔥 Fix: Call verifyLogin using email (not address)
+      const [isValid, message] = await contract.methods.verifyLogin(email, passwordHash, fingerprintHash).call();
 
-      if (!isValidLogin) {
-          console.log(chalk.redBright(`🚫 Wrong password OR fingerprint for ${email}`));
-          return res.status(401).json({ success: false, error: "Invalid credentials or device mismatch" });
+      if (!isValid) {
+          console.log(`🚫 Wrong password OR fingerprint for ${email}`);
+          return res.status(401).json({ success: false, error: message });
       }
 
-      console.log(chalk.greenBright(`✅ Login success for ${email}! 🎉`));
+      console.log(`✅ Login success for ${email}! 🎉`);
       res.json({
           success: true,
-          userAddress,
           message: "Login successful!"
       });
 
   } catch (error) {
-      console.log(chalk.redBright(`❌ Login error for ${email}:`));
-      console.error(error);
-      res.status(500).json({ success: false, error: error.message });
+      console.log(`❌ Login error for ${email}:`, error);
+      res.status(500).json({ success: false, error: "Server error!" });
   }
 });
+
 
 /**
  * 📌 Get User Details

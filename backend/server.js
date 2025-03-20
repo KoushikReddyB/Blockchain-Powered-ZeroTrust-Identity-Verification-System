@@ -2,9 +2,10 @@ const express = require("express");
 const { Web3 } = require("web3");
 const cors = require("cors");
 const chalk = require("chalk");
-require("dotenv").config(); // Use environment variables for security
+require("dotenv").config();
 const bodyParser = require("body-parser");
-const { generateOTP, sendOTP } = require("./otpService");
+const rateLimit = require("express-rate-limit");
+const { generateOTP, sendOTP, verifyOTP, otpStore } = require("./otpService");
 
 const app = express();
 app.use(express.json());
@@ -379,8 +380,12 @@ app.post("/update-fingerprint", async (req, res) => {
  *  📌 OTP Services
  */
 
-// ✅ OTP Storage (Temporary, in-memory)
-let otpStore = {};
+// 📌 Rate limiter for OTP requests (max 3 per 10 min)
+const otpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 3, // Allow only 3 requests per window
+  message: { success: false, error: "Too many OTP requests! Try again later." },
+});
 
 // ✅ Function to Check OTP Validity
 function isOtpValid(email, otp) {
@@ -400,34 +405,31 @@ function isOtpValid(email, otp) {
 /**
  * 📌 API: Request OTP (for Registration & Updates)
  */
-app.post("/request-otp", async (req, res) => {
-    const { email } = req.body;
-    console.log(`[INFO] OTP request for: ${email}`);
+app.post("/request-otp", otpLimiter, async (req, res) => {
+  const { email } = req.body;
+  console.log(`[INFO] OTP request for: ${email}`);
 
-    const otp = generateOTP();
-    otpStore[email] = { otp, timestamp: Date.now() };
+  const otp = generateOTP();
+  const sent = await sendOTP(email, otp);
 
-    const sent = await sendOTP(email, otp);
-    if (!sent) {
-        return res.status(500).json({ success: false, error: "Failed to send OTP" });
-    }
+  if (!sent) {
+      return res.status(500).json({ success: false, error: "Failed to send OTP" });
+  }
 
-    res.json({ success: true, message: "OTP sent successfully!" });
+  res.json({ success: true, message: "OTP sent successfully!" });
 });
 
-/**
- * 📌 API: Verify OTP
- */
-app.post("/verify-otp", (req, res) => {
-    const { email, otp } = req.body;
+// ✅ Verify OTP API
+app.post("/verify-otp", async (req, res) => {
+  const { email, otp } = req.body;
+  const result = await verifyOTP(email, otp);
 
-    if (isOtpValid(email, otp)) {
-        return res.json({ success: true, message: "OTP verified successfully!" });
-    }
+  if (!result.success) {
+      return res.status(401).json({ success: false, error: result.error });
+  }
 
-    res.status(401).json({ success: false, error: "Invalid or expired OTP" });
+  res.json({ success: true, message: "OTP verified successfully!" });
 });
-
 
 /**
  * 🚀 Start the Express Server

@@ -12,12 +12,12 @@ app.use(express.json());
 app.use(cors());
 
 // 📡 Connect to local Ethereum blockchain (Ganache or Hardhat)
-const web3 = new Web3("http://127.0.0.1:8545");
+const web3 = new Web3("http://13.60.241.5:8545");
 
 // ⚡ Load environment variables (store these securely!)
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
-const ACCOUNT_ADDRESS = "0xc392bceC161827C804A98b339Aac89eBB75bCa30";
-const PRIVATE_KEY = "0x696d09e266f5325e348884fe5a76a942002350636cc852ff8f0aec4e4f832fa7"; // Account for transactions
+const ACCOUNT_ADDRESS = "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1";
+const PRIVATE_KEY = "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"; // Account for transactions
 
 // ✅ Smart Contract ABI (Replace this with your actual ABI)
 const contractABI = [

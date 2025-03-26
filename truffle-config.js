@@ -17,9 +17,9 @@ module.exports = {
       skipDryRun: true // Skip dry run before migrations? (default: false for public nets )
     },
     development: {
-      host: "127.0.0.1",
+      host: "13.60.241.5",
       port: 8545,
-      network_id: "5777", // Match any network id
+      network_id: "*", // Match any network id
       gas: 6721975 // Adjust the gas limit here
     },
   },

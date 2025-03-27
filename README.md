@@ -135,7 +135,4 @@ aws s3 sync ./frontend/build s3://your-bucket-name
 ✅ **Smart Contract Upgradeability** for improved security.  
 
 ---
-
-📌 **Developed By:** Koushik Reddy B, N Sri Harshith, Tulasi Ram & Muni Sai Charith 
----
 🚀 **Powered By:** AWS, Ethereum, Web3.js, and Zero-Trust Security Model  

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { loginUser } from "../services/api";
 import { getDeviceFingerprint } from "../utils/fingerprint";
-import { sha256 } from "crypto-js"; // Assuming you're using this for password hashing
-import "../pages/css/Auth.css";
+import SHA256 from "crypto-js/sha256";  
+import "../pages/css/Auth.css";  
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,6 +13,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // Get device fingerprint on component mount
   useEffect(() => {
     getDeviceFingerprint().then(setFingerprintHash);
   }, []);
@@ -20,7 +21,7 @@ const Login = () => {
   // Update password hash when password changes
   useEffect(() => {
     if (password) {
-      setPasswordHash(sha256(password).toString());
+      setPasswordHash(SHA256(password).toString());  // Hash the password using sha256
     }
   }, [password]);
 
@@ -28,10 +29,15 @@ const Login = () => {
     try {
       setIsLoading(true);
       setError("");
+      
+      // Send login request
       const response = await loginUser(email, passwordHash, fingerprintHash);
-      alert(response.data.message);
+      
+      // If login is successful
+      alert(response.data.message);  // Show success message from the API
     } catch (error) {
-      setError("Login failed. Please check your credentials.");
+      const errorMessage = error?.response?.data?.error || "Login failed. Please check your credentials.";
+      setError(errorMessage); // Set error message received from server
     } finally {
       setIsLoading(false);
     }
@@ -53,13 +59,13 @@ const Login = () => {
           <p className="features">• Zero knowledge proofs</p>
         </div>
       </div>
-      
+
       <div className="auth-container">
         <div className="glow glow-top-right"></div>
         <div className="glow glow-bottom-left"></div>
         
         <h2>Login</h2>
-        
+
         {/* Email Input */}
         <div className="input-group">
           <input
@@ -73,7 +79,7 @@ const Login = () => {
           />
           <label htmlFor="email">Email</label>
         </div>
-        
+
         {/* Password Input */}
         <div className="input-group password-field">
           <input
@@ -86,26 +92,29 @@ const Login = () => {
             required
           />
           <label htmlFor="password">Password</label>
-          <button 
-            type="button" 
-            className="password-toggle" 
+          <button
+            type="button"
+            className="password-toggle"
             onClick={togglePasswordVisibility}
           >
             {showPassword ? "Hide" : "Show"}
           </button>
         </div>
-        
+
+        {/* Error message display */}
         {error && <div className="error-message">{error}</div>}
-        
-        <button 
-          className="auth-button" 
-          onClick={handleLogin} 
+
+        {/* Login button with loading spinner */}
+        <button
+          className="auth-button"
+          onClick={handleLogin}
           disabled={isLoading}
         >
           {isLoading && <span className="loading-spinner"></span>}
           Login
         </button>
-        
+
+        {/* Link to Register if the user doesn't have an account */}
         <div className="auth-switch">
           Don't have an account? <a href="/register">Register</a>
         </div>

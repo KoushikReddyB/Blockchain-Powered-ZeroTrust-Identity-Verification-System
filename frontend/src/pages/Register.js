@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { registerUser, verifyOTP } from "../services/api";
 import { getDeviceFingerprint } from "../utils/fingerprint";
-import { sha256 } from "crypto-js"; // Assuming you're using this for password hashing
-import "../pages/css/Auth.css";
+import SHA256 from "crypto-js/sha256";  
+import "../pages/css/Auth.css"; 
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -15,14 +15,15 @@ const Register = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // Get device fingerprint on component mount
   useEffect(() => {
     getDeviceFingerprint().then(setFingerprintHash);
   }, []);
 
-  // Update password hash when password changes
+  // Hash the password whenever it changes
   useEffect(() => {
     if (password) {
-      setPasswordHash(sha256(password).toString());
+      setPasswordHash(SHA256(password).toString());
     }
   }, [password]);
 
@@ -31,6 +32,7 @@ const Register = () => {
       setIsLoading(true);
       setError("");
       await registerUser(email, passwordHash, fingerprintHash);
+      alert("OTP sent to email!");
       setStep(2);
     } catch (error) {
       setError("Registration failed. Please try again.");
@@ -68,15 +70,15 @@ const Register = () => {
           <p className="features">• Quantum-resistant encryption</p>
         </div>
       </div>
-      
+
       <div className="auth-container">
         <div className="glow glow-top-right"></div>
         <div className="glow glow-bottom-left"></div>
-        
+
         {step === 1 ? (
           <>
             <h2>Register</h2>
-            
+
             {/* Email Input */}
             <div className="input-group">
               <input
@@ -90,7 +92,7 @@ const Register = () => {
               />
               <label htmlFor="email">Email</label>
             </div>
-            
+
             {/* Password Input */}
             <div className="input-group password-field">
               <input
@@ -103,26 +105,26 @@ const Register = () => {
                 required
               />
               <label htmlFor="password">Password</label>
-              <button 
-                type="button" 
-                className="password-toggle" 
+              <button
+                type="button"
+                className="password-toggle"
                 onClick={togglePasswordVisibility}
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
-            
+
             {error && <div className="error-message">{error}</div>}
-            
-            <button 
-              className="auth-button" 
+
+            <button
+              className="auth-button"
               onClick={handleRegister}
               disabled={isLoading}
             >
               {isLoading && <span className="loading-spinner"></span>}
               Register
             </button>
-            
+
             <div className="auth-switch">
               Already have an account? <a href="/login">Login</a>
             </div>
@@ -130,7 +132,7 @@ const Register = () => {
         ) : (
           <div className="otp-section">
             <h2>Verify OTP</h2>
-            
+
             {/* OTP Input */}
             <div className="input-group">
               <input
@@ -144,11 +146,11 @@ const Register = () => {
               />
               <label htmlFor="otp">OTP</label>
             </div>
-            
+
             {error && <div className="error-message">{error}</div>}
-            
-            <button 
-              className="auth-button" 
+
+            <button
+              className="auth-button"
               onClick={handleVerifyOTP}
               disabled={isLoading}
             >

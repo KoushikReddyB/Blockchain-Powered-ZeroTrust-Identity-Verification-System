@@ -1,0 +1,377 @@
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> npm install -g @aws-amplify/cli
+npm WARN deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm WARN deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+npm WARN deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+
+changed 47 packages in 2m
+
+12 packages are looking for funding
+  run `npm fund` for details
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify configure
+Follow these steps to set up access to your AWS account:
+
+Sign in to your AWS administrator account:
+https://console.aws.amazon.com/
+Press Enter to continue
+  
+Specify the AWS Region
+? region:  eu-north-1
+Follow the instructions at
+https://docs.amplify.aws/cli/start/install/#configure-the-amplify-cli
+
+to complete the user creation in the AWS console
+https://console.aws.amazon.com/iamv2/home#/users/create
+Press Enter to continue
+
+Enter the access key of the newly created user:
+? accessKeyId:  ********************
+? secretAccessKey:  ****************************************
+This would update/create the AWS Profile in your local machine
+? Profile Name:  default
+
+Successfully set up the new user.
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify init
+⚠️ For new projects, we recommend starting with AWS Amplify Gen 2, our new code-first developer experience. Get started at https://docs.amplify.aws/reaact/start/quickstart/
+√ Do you want to continue with Amplify Gen 1? (y/N) · no
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify init
+⚠️ For new projects, we recommend starting with AWS Amplify Gen 2, our new code-first developer experience. Get started at https://docs.amplify.aws/reaact/start/quickstart/
+√ Do you want to continue with Amplify Gen 1? (y/N) · yes
+√ Why would you like to use Amplify Gen 1? · I find the Gen 1 CLI easier to use
+Note: It is recommended to run this command from the root of your app directory
+? Enter a name for the project ZTBCFrontend
+The following configuration will be applied:
+
+Project information
+| Name: ZTBCFrontend
+| Environment: dev
+| Default editor: Visual Studio Code
+| App type: javascript
+| Javascript framework: react
+| Source Directory Path: src
+| Distribution Directory Path: build
+| Build Command: npm.cmd run-script build
+| Start Command: npm.cmd run-script start
+
+? Initialize the project with the above configuration? Yes
+Using default provider  awscloudformation
+? Select the authentication method you want to use: AWS profile
+
+For more information on AWS Profiles, see:
+https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html
+
+? Please choose the profile you want to use default
+Adding backend environment dev to AWS Amplify app: d2ubp20cbn07lr
+
+Deployment completed.
+Deploying root stack ZTBCFrontend [ ==============================---------- ] 3/4
+        amplify-ztbcfrontend-dev-8977c AWS::CloudFormation::Stack     CREATE_IN_PROGRESS             Wed Apr 02 2025 12:26:56…
+        DeploymentBucket               AWS::S3::Bucket                CREATE_COMPLETE                Wed Apr 02 2025 12:27:13…
+        UnauthRole                     AWS::IAM::Role                 CREATE_COMPLETE                Wed Apr 02 2025 12:27:18…
+        AuthRole                       AWS::IAM::Role                 CREATE_COMPLETE                Wed Apr 02 2025 12:27:17…
+
+√ Help improve Amplify CLI by sharing non-sensitive project configurations on failures (y/N) · yes
+
+    Thank you for helping us improve Amplify CLI!
+Deployment state saved successfully.
+√ Initialized provider successfully.
+✅ Initialized your environment successfully.
+✅ Your project has been successfully initialized and connected to the cloud!
+Some next steps:
+
+"amplify status" will show you what you've added already and if it's locally configured or deployed
+"amplify add <category>" will allow you to add features like user login or a backend API
+"amplify push" will build all your local backend resources and provision it in the cloud
+"amplify console" to open the Amplify Console and view your project status
+"amplify publish" will build all your local backend and frontend resources (if you have hosting category added) and provision it in the cloud
+
+
+Pro tip:
+Try "amplify add api" to create a backend API and then "amplify push" to deploy everything
+
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify add hosting
+√ Select the plugin module to execute · Hosting with Amplify Console (Managed hosting with custom domains, Continuous deployment)
+? Choose a type Continuous deployment (Git-based deployments)
+? Continuous deployment is configured in the Amplify Console. Please hit enter once you connect your repository 
+No hosting URL found. Run 'amplify add hosting' again to set up hosting with Amplify Console.
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify add hosting
+√ Select the plugin module to execute · Amazon CloudFront and S3
+√ hosting bucket name · rontend-20250402123026-hostingbucket
+Static webhosting is disabled for the hosting bucket when CloudFront Distribution is enabled.
+
+You can now publish your app using the following command:
+Command: amplify publish
+
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify publish
+√ Successfully pulled backend environment dev from the cloud.
+
+    Current Environment: dev
+
+┌──────────┬─────────────────┬───────────┬───────────────────┐
+│ Category │ Resource name   │ Operation │ Provider plugin   │
+├──────────┼─────────────────┼───────────┼───────────────────┤
+│ Hosting  │ S3AndCloudFront │ Create    │ awscloudformation │
+└──────────┴─────────────────┴───────────┴───────────────────┘
+√ Are you sure you want to continue? (Y/n) · yes
+
+Deployment completed.
+Deploying root stack ZTBCFrontend [ ---------------------------------------- ] 0/2
+        amplify-ztbcfrontend-dev-8977c AWS::CloudFormation::Stack     UPDATE_IN_PROGRESS             Wed Apr 02 2025 12:31:36…
+        hostingS3AndCloudFront         AWS::CloudFormation::Stack     CREATE_IN_PROGRESS             Wed Apr 02 2025 12:31:38…
+Deployed hosting S3AndCloudFront [ ======================================== ] 4/4
+        S3Bucket                       AWS::S3::Bucket                CREATE_COMPLETE                Wed Apr 02 2025 12:31:57…
+        OriginAccessIdentity           AWS::CloudFront::CloudFrontOr… CREATE_COMPLETE                Wed Apr 02 2025 12:31:44…
+        CloudFrontDistribution         AWS::CloudFront::Distribution  CREATE_COMPLETE                Wed Apr 02 2025 12:37:33…
+        PrivateBucketPolicy            AWS::S3::BucketPolicy          CREATE_COMPLETE                Wed Apr 02 2025 12:32:00…
+
+Deployment state saved successfully.
+
+Hosting endpoint: https://d1b2ywmhi5kwcs.cloudfront.net
+
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+> frontend@0.1.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  128.73 kB  build\static\js\main.ce8e4a4d.js
+  4.28 kB    build\static\css\main.a98e49fd.css
+  1.77 kB    build\static\js\453.8ab44547.chunk.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+frontend build command exited with code 0
+Publish started for S3AndCloudFront
+√ Uploaded files successfully.
+Your app is published successfully.
+https://d1b2ywmhi5kwcs.cloudfront.net
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify add api
+? Select from one of the below mentioned services: REST
+√ Provide a friendly name for your resource to be used as a label for this category in the project: · apic096aba7
+√ Provide a friendly name for your resource to be used as a label for this category in the project: · apic096aba7
+√ Provide a path (e.g., /book/{isbn}): · /register-init
+Only one option for [Choose a Lambda source]. Selecting [Create a new Lambda function].
+? Provide an AWS Lambda function name: registerInitLambdaFunction
+? Choose the runtime that you want to use: NodeJS
+? Choose the function template that you want to use: Serverless ExpressJS function (Integration with API Gateway)
+
+✅ Available advanced settings:
+- Resource access permissions
+- Scheduled recurring invocation
+- Lambda layers configuration
+- Environment variables configuration
+- Secret values configuration
+
+? Do you want to configure advanced settings? No
+? Do you want to edit the local lambda function now? Yes
+Edit the file in your editor: D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend\amplify\backend\function\registerInitLambdaFunction\src\app.js
+? Press enter to continue
+✅ Successfully added resource registerInitLambdaFunction locally.
+
+✅ Next steps:
+Check out sample function code generated in <project-dir>/amplify/backend/function/registerInitLambdaFunction/src
+"amplify function build" builds all of your functions currently in the project
+"amplify mock function <functionName>" runs your function locally
+To access AWS resources outside of this Amplify app, edit the D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend\amplify\backend\function\registerInitLambdaFunction\custom-policies.json
+"amplify push" builds all of your local backend resources and provisions them in the cloud
+"amplify publish" builds all of your local backend and front-end resources (if you added hosting category) and provisions them in the cloud
+✅ Succesfully added the Lambda function locally
+√ Restrict API access? (Y/n) · no
+√ Do you want to add another path? (y/N) · yes
+√ Provide a path (e.g., /book/{isbn}): · /register-verify
+Only one option for [Choose a Lambda source]. Selecting [Create a new Lambda function].
+? Provide an AWS Lambda function name: RegisterVerifyLambdaFunction
+? Choose the runtime that you want to use: NodeJS
+? Choose the function template that you want to use: Serverless ExpressJS function (Integration with API Gateway)
+
+✅ Available advanced settings:
+- Resource access permissions
+- Scheduled recurring invocation
+- Lambda layers configuration
+- Environment variables configuration
+- Secret values configuration
+
+? Do you want to configure advanced settings? No
+? Do you want to edit the local lambda function now? Yes
+Edit the file in your editor: D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend\amplify\backend\function\RegisterVerifyLambdaFunction\src\app.js
+? Press enter to continue 
+✅ Successfully added resource RegisterVerifyLambdaFunction locally.
+
+✅ Next steps:
+Check out sample function code generated in <project-dir>/amplify/backend/function/RegisterVerifyLambdaFunction/src
+"amplify function build" builds all of your functions currently in the project
+"amplify mock function <functionName>" runs your function locally
+To access AWS resources outside of this Amplify app, edit the D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend\amplify\backend\function\RegisterVerifyLambdaFunction\custom-policies.json
+"amplify push" builds all of your local backend resources and provisions them in the cloud
+"amplify publish" builds all of your local backend and front-end resources (if you added hosting category) and provisions them in the cloud
+✅ Succesfully added the Lambda function locally
+√ Restrict API access? (Y/n) · no
+√ Do you want to add another path? (y/N) · yes
+√ Provide a path (e.g., /book/{isbn}): · /login
+Only one option for [Choose a Lambda source]. Selecting [Create a new Lambda function].
+? Provide an AWS Lambda function name: LoginLambdaFunction
+? Choose the runtime that you want to use: NodeJS
+? Choose the function template that you want to use: AppSync - GraphQL API request (with IAM)
+🛑 AppSync API does not exist. To add an api, use "amplify add api".
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify add api
+? Select from one of the below mentioned services: REST
+√ Provide a friendly name for your resource to be used as a label for this category in the project: · apiab4adbfc
+√ Provide a path (e.g., /book/{isbn}): · /login
+√ Choose a Lambda source · Use a Lambda function already added in the current Amplify project
+× Choose the Lambda function to invoke by this path · registerInitLambdaFunction
+🛑 There was an error adding the API resource
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify add api
+? Select from one of the below mentioned services: REST
+√ Provide a friendly name for your resource to be used as a label for this category in the project: · apic64d4410
+√ Provide a path (e.g., /book/{isbn}): · /login
+√ Choose a Lambda source · Create a new Lambda function
+? Provide an AWS Lambda function name: LoginLambdaFunction
+? Choose the runtime that you want to use: NodeJS
+? Choose the function template that you want to use: Serverless ExpressJS function (Integration with API Gateway)
+
+✅ Available advanced settings:
+- Resource access permissions
+- Scheduled recurring invocation
+- Lambda layers configuration
+- Environment variables configuration
+- Secret values configuration
+
+? Do you want to configure advanced settings? No
+? Do you want to edit the local lambda function now? Yes
+Edit the file in your editor: D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend\amplify\backend\function\LoginLambdaFunction\src\app.js
+? Press enter to continue 
+✅ Successfully added resource LoginLambdaFunction locally.
+
+✅ Next steps:
+Check out sample function code generated in <project-dir>/amplify/backend/function/LoginLambdaFunction/src
+"amplify function build" builds all of your functions currently in the project
+"amplify mock function <functionName>" runs your function locally
+To access AWS resources outside of this Amplify app, edit the D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend\amplify\backend\function\LoginLambdaFunction\custom-policies.json
+"amplify push" builds all of your local backend resources and provisions them in the cloud
+"amplify publish" builds all of your local backend and front-end resources (if you added hosting category) and provisions them in the cloud
+✅ Succesfully added the Lambda function locally
+√ Restrict API access? (Y/n) · no
+√ Do you want to add another path? (y/N) · no
+✅ Successfully added resource apic64d4410 locally
+
+✅ Some next steps:
+"amplify push" will build all your local backend resources and provision it in the cloud
+"amplify publish" will build all your local backend and frontend resources (if you have hosting category added) and provision it in the cloud
+
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> 
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify push
+√ Successfully pulled backend environment dev from the cloud.
+
+    Current Environment: dev
+
+┌──────────┬──────────────────────────────┬───────────┬───────────────────┐
+│ Category │ Resource name                │ Operation │ Provider plugin   │
+├──────────┼──────────────────────────────┼───────────┼───────────────────┤
+│ Function │ registerInitLambdaFunction   │ Create    │ awscloudformation │
+├──────────┼──────────────────────────────┼───────────┼───────────────────┤
+│ Function │ RegisterVerifyLambdaFunction │ Create    │ awscloudformation │
+├──────────┼──────────────────────────────┼───────────┼───────────────────┤
+│ Function │ LoginLambdaFunction          │ Create    │ awscloudformation │
+├──────────┼──────────────────────────────┼───────────┼───────────────────┤
+│ Api      │ apic64d4410                  │ Create    │ awscloudformation │
+├──────────┼──────────────────────────────┼───────────┼───────────────────┤
+│ Hosting  │ S3AndCloudFront              │ No Change │ awscloudformation │
+└──────────┴──────────────────────────────┴───────────┴───────────────────┘
+√ Are you sure you want to continue? (Y/n) · yes
+
+Deployment completed.
+Deploying root stack ZTBCFrontend [ ===========================------------- ] 4/6
+        amplify-ztbcfrontend-dev-8977c AWS::CloudFormation::Stack     UPDATE_IN_PROGRESS             Wed Apr 02 2025 12:46:12…      
+        functionRegisterVerifyLambdaF… AWS::CloudFormation::Stack     CREATE_COMPLETE                Wed Apr 02 2025 12:47:17…      
+        functionregisterInitLambdaFun… AWS::CloudFormation::Stack     CREATE_COMPLETE                Wed Apr 02 2025 12:47:17…      
+        functionLoginLambdaFunction    AWS::CloudFormation::Stack     CREATE_COMPLETE                Wed Apr 02 2025 12:47:17…      
+        hostingS3AndCloudFront         AWS::CloudFormation::Stack     UPDATE_COMPLETE                Wed Apr 02 2025 12:46:16…      
+        apiapic64d4410                 AWS::CloudFormation::Stack     CREATE_IN_PROGRESS             Wed Apr 02 2025 12:47:17…      
+Deployed function registerInitLambdaFunction [ ======================================== ] 3/3
+Deployed function RegisterVerifyLambdaFunction [ ======================================== ] 3/3
+Deployed function LoginLambdaFunction [ ======================================== ] 3/3
+        LambdaExecutionRole            AWS::IAM::Role                 CREATE_COMPLETE                Wed Apr 02 2025 12:46:37…      
+        LambdaFunction                 AWS::Lambda::Function          CREATE_COMPLETE                Wed Apr 02 2025 12:46:48…      
+        lambdaexecutionpolicy          AWS::IAM::Policy               CREATE_IN_PROGRESS             Wed Apr 02 2025 12:46:48…      
+Deploying api apic64d4410 [ ================------------------------ ] 2/5
+        apic64d4410                    AWS::ApiGateway::RestApi       CREATE_COMPLETE                Wed Apr 02 2025 12:47:23…      
+        functionLoginLambdaFunctionPe… AWS::Lambda::Permission        CREATE_COMPLETE                Wed Apr 02 2025 12:47:25…      
+
+Deployment state saved successfully.
+
+REST API endpoint: https://sc13z5uyt5.execute-api.eu-north-1.amazonaws.com/dev
+
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+No AppSync API configured. Please add an API
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> 
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> 
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> amplify publish
+√ Successfully pulled backend environment dev from the cloud.
+
+    Current Environment: dev
+
+┌──────────┬──────────────────────────────┬───────────┬───────────────────┐
+│ Category │ Resource name                │ Operation │ Provider plugin   │
+├──────────┼──────────────────────────────┼───────────┼───────────────────┤
+│ Hosting  │ S3AndCloudFront              │ No Change │ awscloudformation │
+├──────────┼──────────────────────────────┼───────────┼───────────────────┤
+│ Function │ registerInitLambdaFunction   │ No Change │ awscloudformation │
+├──────────┼──────────────────────────────┼───────────┼───────────────────┤
+│ Function │ RegisterVerifyLambdaFunction │ No Change │ awscloudformation │
+├──────────┼──────────────────────────────┼───────────┼───────────────────┤
+│ Function │ LoginLambdaFunction          │ No Change │ awscloudformation │
+├──────────┼──────────────────────────────┼───────────┼───────────────────┤
+│ Api      │ apic64d4410                  │ No Change │ awscloudformation │
+└──────────┴──────────────────────────────┴───────────┴───────────────────┘
+
+No changes detected
+
+? Do you still want to publish the frontend? Yes
+
+> frontend@0.1.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  128.73 kB  build\static\js\main.ce8e4a4d.js
+  4.28 kB    build\static\css\main.a98e49fd.css
+  1.77 kB    build\static\js\453.8ab44547.chunk.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+frontend build command exited with code 0
+Publish started for S3AndCloudFront
+√ Uploaded files successfully.
+Your app is published successfully.
+https://d1b2ywmhi5kwcs.cloudfront.net
+PS D:\KLU\Projects\Rustling\Blockchain pow ZT Identity\blockchain-zero-trust\frontend> 

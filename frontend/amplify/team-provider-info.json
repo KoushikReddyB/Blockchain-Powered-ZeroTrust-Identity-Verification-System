@@ -10,6 +10,28 @@
       "StackName": "amplify-ztbcfrontend-dev-8977c",
       "StackId": "arn:aws:cloudformation:eu-north-1:471112799156:stack/amplify-ztbcfrontend-dev-8977c/aa877770-0f8f-11f0-99fd-06716717aea5",
       "AmplifyAppId": "d2ubp20cbn07lr"
+    },
+    "categories": {
+      "hosting": {
+        "S3AndCloudFront": {}
+      },
+      "function": {
+        "LoginLambdaFunction": {
+          "deploymentBucketName": "amplify-ztbcfrontend-dev-8977c-deployment",
+          "s3Key": "amplify-builds/LoginLambdaFunction-38564b38746955516768-build.zip"
+        },
+        "RegisterVerifyLambdaFunction": {
+          "deploymentBucketName": "amplify-ztbcfrontend-dev-8977c-deployment",
+          "s3Key": "amplify-builds/RegisterVerifyLambdaFunction-7061713670746e4e376e-build.zip"
+        },
+        "registerInitLambdaFunction": {
+          "deploymentBucketName": "amplify-ztbcfrontend-dev-8977c-deployment",
+          "s3Key": "amplify-builds/registerInitLambdaFunction-45664168616152527933-build.zip"
+        }
+      },
+      "api": {
+        "apic64d4410": {}
+      }
     }
   }
 }

@@ -1,89 +1,25 @@
 {
-  "api": {
-    "apic64d4410": {
-      "dependsOn": [
-        {
-          "attributes": [
-            "Name",
-            "Arn"
-          ],
-          "category": "function",
-          "resourceName": "LoginLambdaFunction"
-        }
-      ],
-      "providerPlugin": "awscloudformation",
-      "service": "API Gateway"
-    }
-  },
-  "function": {
-    "LoginLambdaFunction": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "RegisterVerifyLambdaFunction": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "registerInitLambdaFunction": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    }
-  },
   "hosting": {
-    "S3AndCloudFront": {
+    "amplifyhosting": {
       "providerPlugin": "awscloudformation",
-      "service": "S3AndCloudFront"
+      "service": "amplifyhosting",
+      "type": "manual"
     }
   },
   "parameters": {
-    "AMPLIFY_function_LoginLambdaFunction_deploymentBucketName": {
+    "AMPLIFY_hosting_amplifyhosting_appId": {
       "usedBy": [
         {
-          "category": "function",
-          "resourceName": "LoginLambdaFunction"
+          "category": "hosting",
+          "resourceName": "amplifyhosting"
         }
       ]
     },
-    "AMPLIFY_function_LoginLambdaFunction_s3Key": {
+    "AMPLIFY_hosting_amplifyhosting_type": {
       "usedBy": [
         {
-          "category": "function",
-          "resourceName": "LoginLambdaFunction"
-        }
-      ]
-    },
-    "AMPLIFY_function_RegisterVerifyLambdaFunction_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "RegisterVerifyLambdaFunction"
-        }
-      ]
-    },
-    "AMPLIFY_function_RegisterVerifyLambdaFunction_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "RegisterVerifyLambdaFunction"
-        }
-      ]
-    },
-    "AMPLIFY_function_registerInitLambdaFunction_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "registerInitLambdaFunction"
-        }
-      ]
-    },
-    "AMPLIFY_function_registerInitLambdaFunction_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "registerInitLambdaFunction"
+          "category": "hosting",
+          "resourceName": "amplifyhosting"
         }
       ]
     }

@@ -1,36 +1,22 @@
 {
   "dev": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-ztbcfrontend-dev-8977c-authRole",
-      "UnauthRoleArn": "arn:aws:iam::471112799156:role/amplify-ztbcfrontend-dev-8977c-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::471112799156:role/amplify-ztbcfrontend-dev-8977c-authRole",
+      "AuthRoleName": "amplify-zerotrust-dev-bcb5a-authRole",
+      "UnauthRoleArn": "arn:aws:iam::471112799156:role/amplify-zerotrust-dev-bcb5a-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::471112799156:role/amplify-zerotrust-dev-bcb5a-authRole",
       "Region": "eu-north-1",
-      "DeploymentBucketName": "amplify-ztbcfrontend-dev-8977c-deployment",
-      "UnauthRoleName": "amplify-ztbcfrontend-dev-8977c-unauthRole",
-      "StackName": "amplify-ztbcfrontend-dev-8977c",
-      "StackId": "arn:aws:cloudformation:eu-north-1:471112799156:stack/amplify-ztbcfrontend-dev-8977c/aa877770-0f8f-11f0-99fd-06716717aea5",
-      "AmplifyAppId": "d2ubp20cbn07lr"
+      "DeploymentBucketName": "amplify-zerotrust-dev-bcb5a-deployment",
+      "UnauthRoleName": "amplify-zerotrust-dev-bcb5a-unauthRole",
+      "StackName": "amplify-zerotrust-dev-bcb5a",
+      "StackId": "arn:aws:cloudformation:eu-north-1:471112799156:stack/amplify-zerotrust-dev-bcb5a/34fabff0-150a-11f0-b71e-0af84867aad3",
+      "AmplifyAppId": "dn4rviklxvprm"
     },
     "categories": {
       "hosting": {
-        "S3AndCloudFront": {}
-      },
-      "function": {
-        "LoginLambdaFunction": {
-          "deploymentBucketName": "amplify-ztbcfrontend-dev-8977c-deployment",
-          "s3Key": "amplify-builds/LoginLambdaFunction-38564b38746955516768-build.zip"
-        },
-        "RegisterVerifyLambdaFunction": {
-          "deploymentBucketName": "amplify-ztbcfrontend-dev-8977c-deployment",
-          "s3Key": "amplify-builds/RegisterVerifyLambdaFunction-7061713670746e4e376e-build.zip"
-        },
-        "registerInitLambdaFunction": {
-          "deploymentBucketName": "amplify-ztbcfrontend-dev-8977c-deployment",
-          "s3Key": "amplify-builds/registerInitLambdaFunction-45664168616152527933-build.zip"
+        "amplifyhosting": {
+          "appId": "dn4rviklxvprm",
+          "type": "manual"
         }
-      },
-      "api": {
-        "apic64d4410": {}
       }
     }
   }

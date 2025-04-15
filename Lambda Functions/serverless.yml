@@ -1,0 +1,34 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: zapppyy
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: blockchain-auth
+service: blockchain-auth
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  environment:
+    OTP_EXPIRY: 300 # OTP expires in 5 mins
+    BLOCKCHAIN_RPC: http://13.60.241.5:8545 # Your blockchain RPC
+
+functions:
+  registerInit:
+    handler: handler.registerInit
+    events:
+      - http:
+          path: register/init
+          method: post
+
+  registerVerify:
+    handler: handler.registerVerify
+    events:
+      - http:
+          path: register/verify
+          method: post
+
+  login:
+    handler: handler.login
+    events:
+      - http:
+          path: login
+          method: post

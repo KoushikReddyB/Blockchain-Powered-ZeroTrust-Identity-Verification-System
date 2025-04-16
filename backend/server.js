@@ -547,7 +547,7 @@ app.post("/verify-otp", async (req, res) => {
 /**
  * 🚀 Start the Express Server
  */
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, '0.0.0.0', () => {
+const PORT = process.env.PORT || 3002;
+app.listen(PORT, () => {
     console.log(chalk.greenBright(`✅ Server is LIVE! 🚀 Ready at: http://0.0.0.0:${PORT}`));
 });

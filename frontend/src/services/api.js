@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://ec2-13-60-241-5.eu-north-1.compute.amazonaws.com:3002";
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const registerUser = async (email, passwordHash, fingerprintHash) => {
   return axios.post(`${API_URL}/register-init`, { email, passwordHash, fingerprintHash });

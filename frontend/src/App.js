@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import About from "./pages/About";
 import "./App.css";
+import { API_URL } from "./config"; // top of file
 
 const HeroSection = () => {
   const [animateTitle, setAnimateTitle] = useState(false);

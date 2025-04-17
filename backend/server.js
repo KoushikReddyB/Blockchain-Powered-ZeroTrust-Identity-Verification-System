@@ -16,8 +16,8 @@ const web3 = new Web3("http://13.60.241.5:8545");
 
 // ⚡ Load environment variables (store these securely!)
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
-const ACCOUNT_ADDRESS = "0x28fcc0e92A4F6EAD9e8d75C6F7327D4E575F1E36";
-const PRIVATE_KEY = "0x68abde94c9fa3eb4bc0992f007d0861acd4b79988853c1fedd9ab3fb67893f27"; // Account for transactions
+const ACCOUNT_ADDRESS = "0x65AD7C4F808dBeBeaBEE61E898e83a15e6A13A09";
+const PRIVATE_KEY = "0x9de51b9e48d38336c5d6206794c8f59ba6698a61be485292baeee04fd6cb4922"; // Account for transactions
 
 // ✅ Smart Contract ABI (Replace this with your actual ABI)
 const contractABI = [
